@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run Tunnel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    #canvas-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    #canvas-container canvas {
+      display: block;
+      width: 100%; height: 100%;
+    }
+    #hud {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      font-family: 'Orbitron', sans-serif;
+      z-index: 10;
+    }
+    #score {
+      position: absolute;
+      top: 24px; right: 32px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      text-shadow: 0 0 12px #00ffff, 0 0 24px #00ffff44;
+      display: none;
+    }
+    #start-screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.7);
+      pointer-events: auto;
+    }
+    #start-screen h1 {
+      font-size: 52px;
+      font-weight: 900;
+      color: #00ffff;
+      text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff66;
+      margin-bottom: 16px;
+      letter-spacing: 6px;
+    }
+    #start-screen p {
+      font-size: 18px;
+      color: #aaa;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    #game-over {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      pointer-events: auto;
+    }
+    #game-over h1 {
+      font-size: 48px;
+      font-weight: 900;
+      color: #ff0066;
+      text-shadow: 0 0 20px #ff0066, 0 0 40px #ff006666;
+      margin-bottom: 12px;
+      letter-spacing: 4px;
+    }
+    #game-over .final-score {
+      font-size: 24px;
+      color: #fff;
+      margin-bottom: 32px;
+    }
+    #play-again {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 14px 40px;
+      border: 2px solid #00ffff;
+      background: transparent;
+      color: #00ffff;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+      pointer-events: auto;
+    }
+    #play-again:hover {
+      background: #00ffff;
+      color: #000;
+      box-shadow: 0 0 20px #00ffff88;
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container"></div>
+  <div id="hud">
+    <div id="score">0</div>
+    <div id="start-screen">
+      <h1>RUN</h1>
+      <p>Press any key to start</p>
+    </div>
+    <div id="game-over">
+      <h1>GAME OVER</h1>
+      <p class="final-score">Score: <span id="final-score-value">0</span></p>
+      <button id="play-again">Play Again</button>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
