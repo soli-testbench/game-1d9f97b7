@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Run Tunnel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    #app { width: 100%; height: 100%; position: relative; }
+    canvas { display: block; }
+    #hud {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; font-family: 'Orbitron', sans-serif;
+    }
+    #score {
+      position: absolute; top: 20px; right: 30px;
+      font-size: 24px; color: #fff;
+      text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    }
+    #start-screen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.85); pointer-events: auto;
+    }
+    #start-screen h1 {
+      font-size: 48px; color: #00ffff;
+      text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+      margin-bottom: 30px;
+    }
+    #start-screen p {
+      font-size: 18px; color: #aaa; margin-bottom: 10px;
+    }
+    #start-screen .prompt {
+      font-size: 22px; color: #fff; margin-top: 30px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    #game-over {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.85); pointer-events: auto;
+    }
+    #game-over h1 {
+      font-size: 48px; color: #ff0066;
+      text-shadow: 0 0 20px #ff0066, 0 0 40px #ff0066;
+      margin-bottom: 20px;
+    }
+    #game-over .final-score {
+      font-size: 28px; color: #fff; margin-bottom: 40px;
+    }
+    #play-again {
+      font-family: 'Orbitron', sans-serif; font-size: 20px;
+      padding: 15px 40px; border: 2px solid #00ffff; background: transparent;
+      color: #00ffff; cursor: pointer; transition: all 0.2s;
+    }
+    #play-again:hover {
+      background: #00ffff; color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="hud">
+      <div id="score">0</div>
+      <div id="start-screen">
+        <h1>RUN</h1>
+        <p>Arrow Keys: Move &nbsp;|&nbsp; Space/Up: Jump</p>
+        <p class="prompt">Press any key to start</p>
+      </div>
+      <div id="game-over">
+        <h1>GAME OVER</h1>
+        <div class="final-score">Score: <span id="final-score-value">0</span></div>
+        <button id="play-again">Play Again</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

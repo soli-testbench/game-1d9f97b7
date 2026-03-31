@@ -1,0 +1,255 @@
+{
+  "quality": "full",
+  "tasks": [
+    {
+      "id": "main",
+      "title": "Build the Run tunnel game — complete 3D endless runner",
+      "description": "Implement a complete, polished tunnel runner game using Three.js + TypeScript + Vite. The player runs inside a rectangular tube made of neon-colored grid tiles. Some tiles are missing (holes). The tunnel scrolls toward the player with increasing speed. Falling through a hole ends the game. Includes score tracking, game over screen, and Play Again functionality.",
+      "acceptance_criteria": "Game is playable in browser via npm run dev. 3D perspective tunnel renders with receding geometry. Player character is bright neon, clearly visible. Arrow keys move player immediately on keydown; Up/Space jumps with parabolic arc. Edge wrap smoothly rotates to adjacent face. Holes are black void with glowing border. Speed starts ~280px/s and accelerates. Missing tiles cause game over. Score, game over screen, Play Again all work. No console errors.",
+      "claudeMd": "# Run Tunnel Game — Implementation Context\n\nYou are building a complete 3D tunnel runner game from scratch in a greenfield repo.\n\n## Stack\n- **Three.js 0.183.x** for 3D rendering\n- **TypeScript** for all game code\n- **Vite** for dev server and bundling\n- Load **Orbitron** font from Google Fonts for UI text\n\n## Project Setup\nCreate these files:\n- `package.json` with dependencies: `three`, devDeps: `typescript`, `vite`, `@types/three`\n- `tsconfig.json` targeting ES2020, module ESNext\n- `vite.config.ts` minimal config\n- `index.html` entry point with canvas + HUD overlay divs\n- `src/main.ts` — game entry point\n- `src/tunnel.ts` — tunnel generation + tile management\n- `src/player.ts` — player state, movement, jump physics\n- `src/camera.ts` — camera controller with face rotation\n- `src/input.ts` — input manager\n- `src/game.ts` — game state, score, speed, game loop\n- `src/hud.ts` — HTML overlay for score + game over\n- `src/types.ts` — shared types/constants\n\n## Architecture\n\n### Tunnel (rectangular tube along -Z axis)\n- 4 faces: floor (Y=0), ceiling (Y=H), left wall (X=0), right wall (X=W)\n- Each face is 5 tiles wide laterally, extends deep into -Z\n- Use **InstancedMesh** — one per face (4 total). Each instance = one tile quad.\n- Ring buffer: keep ~30-40 rows alive. Recycle rows that scroll past camera to the far end.\n- Tile size: 1 world unit. Tunnel cross-section: 5x5 units.\n- Face colors (emissive): floor=#00CCAA, left=#AA00FF, right=#FF0066, ceiling=#0044FF\n- Grid lines: thin line geometry or slight gap between tiles (0.02 unit gap)\n\n### Holes\n- Generated per row: random tiles removed, but NEVER two adjacent holes in the same row or consecutive rows at the same lateral position\n- Ensure at least 1 solid tile between consecutive holes so the player always has a path\n- Holes = no mesh instance at that position. Draw a thin glowing border mesh around the void (face color at 40% opacity, 0.02 unit wide frame).\n- Hole density starts low (~15% of tiles) and increases with time (cap at ~40%)\n\n### Player\n- Bright cyan (#00FFFF) glowing sphere, radius ~0.3 units\n- MeshStandardMaterial with emissive=#00FFFF, emissiveIntensity=2\n- Position: on the current face, at a specific lateral tile index\n- Always rendered at the near end of the visible tunnel (Z ~ -2 or -3 from camera)\n\n### Movement\n- Left/Right arrow: move 1 tile laterally, instant on keydown\n- Edge wrapping: if player moves past tile 0 or tile 4 on a face, wrap to adjacent face:\n  - Floor left edge → Left wall right edge\n  - Floor right edge → Right wall left edge\n  - Left wall left edge → Ceiling right edge\n  - Left wall right edge → Floor left edge\n  - etc. (circular: floor→right wall→ceiling→left wall→floor)\n- Camera rotates 90 deg smoothly (~200ms LERP) when face changes\n\n### Jump\n- Up arrow or Space triggers jump (keydown only, not keyup)\n- Jump height: 1.8 tile heights (1.8 units)\n- Air time: ~380ms total (up + down)\n- Parabolic arc: v0 = 2 * jumpHeight / (halfTime), gravity = 2 * jumpHeight / (halfTime^2)\n- Cannot jump while airborne\n- Landing: if tile below exists → land on it. If hole → game over.\n\n### Camera\n- Perspective camera, FOV ~75\n- Position: behind player, slightly elevated relative to current face\n- Looks down the tunnel (-Z direction, rotated to match current face)\n- When face changes: smoothly rotate the entire camera rig 90 deg around the Z axis\n- Use a parent Object3D for the camera, rotate the parent\n\n### Speed & Scoring\n- Initial speed: 280 units/s (since 1 tile = 1 unit, this means 280 tiles/s... that's too fast)\n- CORRECTION: Scale so 280px/s maps to a reasonable world-space speed. At ~60px per tile on screen, that's ~4.7 tiles/s. Use speed = 4.7 units/s initially.\n- Speed increases 12% every 8 seconds\n- Score = seconds survived, displayed top-right\n- All physics use deltaTime (ms), capped at 50ms per frame\n\n### Post-Processing\n- Use Three.js EffectComposer + UnrealBloomPass for neon glow\n- Bloom strength: ~1.5, radius: 0.4, threshold: 0.1\n- This makes emissive materials glow naturally\n\n### HUD (HTML overlay)\n- Score: top-right corner, Orbitron font, white with cyan text-shadow\n- Game Over: centered overlay, semi-transparent black background, \"GAME OVER\" in Orbitron, final score, \"Play Again\" button\n- Play Again fully resets game state and restarts\n\n### Game Loop\n```\nrequestAnimationFrame:\n  dt = min(clock.getDelta(), 0.05)\n  if playing:\n    update speed (check 8s intervals)\n    scroll tunnel (move rows, recycle)\n    process input (lateral move, jump)\n    update jump physics\n    check collision (hole under player at ground level?)\n    update score\n    update camera (LERP rotation)\n  render with composer (bloom)\n```\n\n## Gotchas\n- Three.js InstancedMesh requires calling `instanceMatrix.needsUpdate = true` after changing transforms\n- UnrealBloomPass import: `import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'`\n- EffectComposer: `import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'`\n- RenderPass: `import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'`\n- For Three.js 0.183.x, addons are under `three/addons/` not `three/examples/jsm/`\n- Make sure to handle window resize (update camera aspect + renderer size)\n- The game must work immediately on load — show a simple 'Press any key to start' or auto-start\n\n## Design Direction: \"Neon Grid Void\"\n- Pure black background (#000000)\n- Each tunnel face has a distinct neon color\n- Tiles have subtle grid gaps between them\n- Bloom post-processing creates the glow effect\n- Player is the brightest element on screen\n- Holes are pure black voids with faint glowing edges\n- Font: Orbitron (Google Fonts) — geometric, sci-fi\n- Overall feel: Tron-like, dark, minimal, high-contrast neon on black",
+      "checklist": [
+        {
+          "id": "t1",
+          "description": "Project scaffolding: package.json, tsconfig, vite config, index.html entry point",
+          "steps": [
+            "Create package.json with three, typescript, vite, @types/three dependencies",
+            "Create tsconfig.json and vite.config.ts",
+            "Create index.html with canvas container and HUD overlay divs",
+            "Run npm install",
+            "Verify npm run dev starts without errors"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t2",
+          "description": "3D tunnel renders with four colored faces receding into perspective",
+          "steps": [
+            "Implement tunnel.ts with InstancedMesh for 4 faces",
+            "Generate ~30 rows of tiles on each face with correct positions",
+            "Apply distinct neon emissive colors per face",
+            "Set up perspective camera looking down the tunnel",
+            "Add bloom post-processing",
+            "Verify tunnel renders with visible perspective depth"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t3",
+          "description": "Player character is a bright neon sphere, clearly visible on the tunnel floor",
+          "steps": [
+            "Create player sphere mesh with emissive cyan material",
+            "Position player on the floor face near the camera",
+            "Verify player is immediately visible and high-contrast against tunnel"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t4",
+          "description": "Tunnel scrolls toward player and tiles recycle via ring buffer",
+          "steps": [
+            "Implement scroll logic: move all tile rows toward camera each frame",
+            "Recycle rows that pass behind camera to the far end with new hole patterns",
+            "Verify tunnel appears to scroll continuously without gaps or popping"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t5",
+          "description": "Holes generate correctly — black voids with glowing borders, never adjacent",
+          "steps": [
+            "Implement hole generation: random removal of tiles, ensuring no two adjacent holes",
+            "Render holes as empty space (no mesh) with a thin glowing border frame",
+            "Verify holes are visually distinct black voids with subtle colored borders"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t6",
+          "description": "Arrow keys move player laterally, snappy on keydown",
+          "steps": [
+            "Implement input.ts with keydown listeners for Left/Right arrows",
+            "Move player 1 tile per keydown, immediately",
+            "Verify movement is responsive and snappy"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t7",
+          "description": "Jump works with parabolic arc on Up/Space keydown",
+          "steps": [
+            "Implement jump physics: parabolic arc, ~380ms air time, 1.8x tile height",
+            "Trigger on keydown (Up arrow or Space), not keyup",
+            "Prevent double-jump while airborne",
+            "Verify jump arc looks natural and timing is consistent"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t8",
+          "description": "Edge wrapping smoothly rotates player and camera to adjacent face",
+          "steps": [
+            "Detect when player moves past edge of current face",
+            "Transition player to adjacent face (circular: floor→right→ceiling→left→floor)",
+            "Smoothly rotate camera 90 deg over ~200ms",
+            "Verify transition feels smooth and player position is correct on new face"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t9",
+          "description": "Speed starts at ~280px/s equivalent and increases 12% every 8 seconds",
+          "steps": [
+            "Set initial scroll speed to appropriate world-space equivalent of 280px/s",
+            "Implement 12% speed increase every 8 seconds of survival",
+            "Verify game gets noticeably faster over time"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t10",
+          "description": "Falling through a hole triggers game over",
+          "steps": [
+            "Check collision each frame: if player is at ground level and current tile is a hole",
+            "Trigger game over state, stop game loop updates",
+            "Verify falling through a hole reliably ends the game"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t11",
+          "description": "Score displays top-right, game over screen with Play Again works",
+          "steps": [
+            "Implement HUD: score counter top-right with Orbitron font",
+            "Show game over overlay with final score and Play Again button",
+            "Play Again fully resets all game state and restarts",
+            "Verify score increments each second and Play Again works correctly"
+          ],
+          "passes": false
+        },
+        {
+          "id": "t12",
+          "description": "No console errors during gameplay",
+          "steps": [
+            "Open browser dev tools console",
+            "Play through a full game session (start → play → die → play again)",
+            "Verify zero errors in console"
+          ],
+          "passes": false
+        }
+      ],
+      "quality_checklist": [
+        {
+          "id": "q1",
+          "description": "All physics and movement are deltaTime-based, not frame-dependent",
+          "steps": [
+            "Check scroll speed multiplication uses deltaTime",
+            "Check jump physics uses deltaTime",
+            "Check speed increase timer uses elapsed time, not frame count",
+            "Verify deltaTime is capped at 50ms to prevent physics tunneling"
+          ],
+          "passes": false
+        },
+        {
+          "id": "q2",
+          "description": "InstancedMesh is used efficiently — no per-tile individual meshes",
+          "steps": [
+            "Verify tiles use InstancedMesh (one per face, not individual Mesh per tile)",
+            "Check that instanceMatrix.needsUpdate is set after transforms change",
+            "Verify ring buffer recycles rows instead of creating/destroying meshes"
+          ],
+          "passes": false
+        },
+        {
+          "id": "q3",
+          "description": "Code is well-organized into focused modules with clear separation",
+          "steps": [
+            "Verify each file has a single responsibility",
+            "Check that game state is not scattered across modules",
+            "Ensure no circular dependencies between modules"
+          ],
+          "passes": false
+        },
+        {
+          "id": "q4",
+          "description": "Game state resets completely on Play Again — no stale state leaks",
+          "steps": [
+            "Check that Play Again resets: score, speed, tunnel rows, player position, jump state, camera rotation",
+            "Play multiple rounds and verify no accumulated drift or memory leaks"
+          ],
+          "passes": false
+        },
+        {
+          "id": "q5",
+          "description": "Visual polish: bloom works, colors are distinct, player is immediately visible",
+          "steps": [
+            "Verify bloom post-processing is active (emissive materials glow)",
+            "Check each tunnel face has a visually distinct color",
+            "Confirm player sphere stands out as the brightest element on screen"
+          ],
+          "passes": false
+        }
+      ]
+    }
+  ],
+  "integration": null,
+  "verification": {
+    "buildCommand": "npm run build",
+    "runCommand": "npm run dev",
+    "readySignal": "ready|localhost|Local:",
+    "appType": "web",
+    "port": 5173,
+    "checks": [
+      {
+        "id": "v1",
+        "description": "Game loads and tunnel is visible with 3D perspective",
+        "steps": [
+          "Open http://localhost:5173 in browser",
+          "Verify a 3D tunnel with colored tile faces is rendered",
+          "Verify the tunnel recedes into a vanishing point"
+        ],
+        "passes": false
+      },
+      {
+        "id": "v2",
+        "description": "Player is visible and controls work",
+        "steps": [
+          "Verify bright cyan player sphere is visible on the tunnel floor",
+          "Press Left/Right arrow keys — player moves laterally",
+          "Press Space — player jumps with visible arc",
+          "Verify controls are responsive (keydown, not keyup)"
+        ],
+        "passes": false
+      },
+      {
+        "id": "v3",
+        "description": "Holes are visible and cause game over",
+        "steps": [
+          "Observe black void holes in the tunnel with glowing borders",
+          "Intentionally run into a hole",
+          "Verify game over screen appears with score"
+        ],
+        "passes": false
+      },
+      {
+        "id": "v4",
+        "description": "Edge wrapping, speed increase, and Play Again work",
+        "steps": [
+          "Move player to edge of floor — verify smooth rotation to adjacent wall",
+          "Play for 10+ seconds — verify speed increases noticeably",
+          "After game over, click Play Again — verify full reset and new game starts"
+        ],
+        "passes": false
+      },
+      {
+        "id": "v5",
+        "description": "No console errors throughout a full session",
+        "steps": [
+          "Open browser dev console",
+          "Play a full session: start → play → die → Play Again → play again",
+          "Verify zero errors in console"
+        ],
+        "passes": false
+      }
+    ]
+  }
+}
