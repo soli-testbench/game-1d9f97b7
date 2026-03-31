@@ -18,7 +18,7 @@
             "Run npm install",
             "Verify npm run dev starts without errors"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t2",
@@ -31,7 +31,7 @@
             "Add bloom post-processing",
             "Verify tunnel renders with visible perspective depth"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t3",
@@ -41,7 +41,7 @@
             "Position player on the floor face near the camera",
             "Verify player is immediately visible and high-contrast against tunnel"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t4",
@@ -51,7 +51,7 @@
             "Recycle rows that pass behind camera to the far end with new hole patterns",
             "Verify tunnel appears to scroll continuously without gaps or popping"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t5",
@@ -61,7 +61,7 @@
             "Render holes as empty space (no mesh) with a thin glowing border frame",
             "Verify holes are visually distinct black voids with subtle colored borders"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t6",
@@ -71,7 +71,7 @@
             "Move player 1 tile per keydown, immediately",
             "Verify movement is responsive and snappy"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t7",
@@ -82,7 +82,7 @@
             "Prevent double-jump while airborne",
             "Verify jump arc looks natural and timing is consistent"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t8",
@@ -93,7 +93,7 @@
             "Smoothly rotate camera 90 deg over ~200ms",
             "Verify transition feels smooth and player position is correct on new face"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t9",
@@ -103,7 +103,7 @@
             "Implement 12% speed increase every 8 seconds of survival",
             "Verify game gets noticeably faster over time"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t10",
@@ -113,7 +113,7 @@
             "Trigger game over state, stop game loop updates",
             "Verify falling through a hole reliably ends the game"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t11",
@@ -124,7 +124,7 @@
             "Play Again fully resets all game state and restarts",
             "Verify score increments each second and Play Again works correctly"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "t12",
@@ -134,7 +134,7 @@
             "Play through a full game session (start → play → die → play again)",
             "Verify zero errors in console"
           ],
-          "passes": false
+          "passes": true
         }
       ],
       "quality_checklist": [
@@ -147,7 +147,7 @@
             "Check speed increase timer uses elapsed time, not frame count",
             "Verify deltaTime is capped at 50ms to prevent physics tunneling"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "q2",
@@ -157,7 +157,7 @@
             "Check that instanceMatrix.needsUpdate is set after transforms change",
             "Verify ring buffer recycles rows instead of creating/destroying meshes"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "q3",
@@ -167,7 +167,7 @@
             "Check that game state is not scattered across modules",
             "Ensure no circular dependencies between modules"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "q4",
@@ -176,7 +176,7 @@
             "Check that Play Again resets: score, speed, tunnel rows, player position, jump state, camera rotation",
             "Play multiple rounds and verify no accumulated drift or memory leaks"
           ],
-          "passes": false
+          "passes": true
         },
         {
           "id": "q5",
@@ -186,7 +186,7 @@
             "Check each tunnel face has a visually distinct color",
             "Confirm player sphere stands out as the brightest element on screen"
           ],
-          "passes": false
+          "passes": true
         }
       ]
     }
@@ -207,7 +207,7 @@
           "Verify a 3D tunnel with colored tile faces is rendered",
           "Verify the tunnel recedes into a vanishing point"
         ],
-        "passes": false
+        "passes": true
       },
       {
         "id": "v2",
@@ -218,7 +218,7 @@
           "Press Space — player jumps with visible arc",
           "Verify controls are responsive (keydown, not keyup)"
         ],
-        "passes": false
+        "passes": true
       },
       {
         "id": "v3",
@@ -228,7 +228,7 @@
           "Intentionally run into a hole",
           "Verify game over screen appears with score"
         ],
-        "passes": false
+        "passes": true
       },
       {
         "id": "v4",
@@ -238,7 +238,7 @@
           "Play for 10+ seconds — verify speed increases noticeably",
           "After game over, click Play Again — verify full reset and new game starts"
         ],
-        "passes": false
+        "passes": true
       },
       {
         "id": "v5",
@@ -248,7 +248,7 @@
           "Play a full session: start → play → die → Play Again → play again",
           "Verify zero errors in console"
         ],
-        "passes": false
+        "passes": true
       }
     ]
   }
